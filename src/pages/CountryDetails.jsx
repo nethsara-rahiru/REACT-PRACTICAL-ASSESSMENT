@@ -1,0 +1,22 @@
+import { useParams, Link } from 'react-router-dom'
+import { ArrowLeft, ArrowLeftRight, Check, Globe2, Users, MapPin, Map } from 'lucide-react'
+import { useApp } from '../context/AppContext'
+import { DataState, Empty, Flag, PanelTitle } from '../components/UI'
+import { useIndicators } from '../components/Indicators'
+import { INDICATORS } from '../services/api'
+import { number, money } from '../utils/format'
+export default function CountryDetails() {
+  const { code } = useParams()
+  const { countries } = useApp()
+  const country = countries.find(c => c.cca3 === code?.toUpperCase())
+  return <><Link to="/explore" className="back-link"><ArrowLeft size={16}/> Back to countries</Link><DataState>{country ? <Country country={country}/> : <Empty title="Country not found" text="This country code doesn’t match our data."><Link className="button primary" to="/explore">Explore countries</Link></Empty>}</DataState></>
+}
+function Country({ country: c }) {
+  const { countries, selected, toggleCountry } = useApp()
+  const { data, loading, retry } = useIndicators([c.cca3])
+  const result = data[c.cca3]
+  const checked = selected.includes(c.cca3)
+  const borders = (c.borders || []).map(code => countries.find(c => c.cca3 === code)).filter(Boolean)
+  const facts = [['Capital', c.capital?.join(', ')], ['Region', c.region], ['Languages', Object.values(c.languages || {}).join(', ')], ['Currencies', Object.values(c.currencies || {}).map(v => `${v.name}${v.symbol ? ` (${v.symbol})` : ''}`).join(', ')], ['Country code', c.cca3], ['Population density', c.area > 0 && Number.isFinite(c.population) ? `${number(c.population / c.area)} people / km²` : null]]
+  return <><div className="country-hero"><Flag country={c} large/><div><div className="eyebrow">{c.region || 'COUNTRY PROFILE'} <span className="eyebrow-divider">/</span> {c.cca3}</div><h1>{c.name.common}</h1><p>{c.name.official || c.name.common}</p><button className={`button ${checked ? '' : 'primary'}`} disabled={!checked && selected.length >= 4} onClick={() => toggleCountry(c.cca3)}>{checked ? <Check size={16}/> : <ArrowLeftRight size={16}/>} {checked ? 'Added to comparison' : selected.length >= 4 ? 'Comparison full (4)' : 'Add to comparison'}</button></div></div><div className="detail-stat-grid">{[[Users, 'Population', number(c.population)], [Map, 'Total area', `${number(c.area)} km²`], [MapPin, 'Capital city', c.capital?.[0] || 'Unavailable'], [Globe2, 'Region', c.region || 'Unavailable']].map(([Icon, label, value]) => <section className="stat-card" key={label}><span className="detail-stat-label"><Icon size={17}/> {label}</span><strong className="detail-stat-value">{value}</strong></section>)}</div><div className="detail-columns"><section className="panel"><PanelTitle title="Get to know the country" subtitle="The essentials, all in one place."/><dl className="facts-list">{facts.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{value || 'Unavailable'}</dd></div>)}</dl></section><section className="panel"><PanelTitle title="Beyond the borders" subtitle={`${borders.length} neighboring ${borders.length === 1 ? 'country' : 'countries'}`}/>{borders.length ? <div className="neighbors">{borders.map(b => <Link key={b.cca3} to={`/country/${b.cca3}`}><Flag country={b}/><span>{b.name.common}</span><span>↗</span></Link>)}</div> : <div className="island-note"><Globe2 size={30}/><h3>No land borders</h3><p>This country has no listed land neighbors.</p></div>}</section></div><section className="panel indicators-panel"><PanelTitle title="The development picture" subtitle="Latest available indicators from the World Bank"><span className="subtle-badge">WORLD BANK OPEN DATA</span></PanelTitle>{loading ? <p role="status" className="inline-status">Loading development indicators…</p> : <>{(!result || result.failed > 0) && <div className="inline-alert" role="alert">Some World Bank indicators couldn’t be loaded. <button className="text-button" onClick={retry}>Retry</button></div>}<div className="indicator-grid">{Object.entries(INDICATORS).map(([key, indicator]) => { const row = result?.values[key]; return <div className="indicator" key={key}><span>{indicator.label}</span><strong>{row ? indicator.unit === 'USD' ? money(row.value) : `${row.value.toFixed(1)}${indicator.unit === '%' ? '%' : ' yrs'}` : 'Unavailable'}</strong><small>{row ? `Reported in ${row.year}` : 'No available reporting value'}</small></div> })}</div></>}<p className="panel-note">Reporting years vary by country and indicator. Missing values are shown as unavailable.</p></section></>
+}
