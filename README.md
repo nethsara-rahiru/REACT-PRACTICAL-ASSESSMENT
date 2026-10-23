@@ -133,3 +133,13 @@ During development, the cloud egress policy denied `restcountries.com` and `api.
 ## AI-use declaration
 
 OpenAI Codex assisted with project scaffolding, UI implementation, API integration, documentation, and automated tests. The student must review, understand, and be able to explain and demonstrate the submitted code, as required by the assessment. AI assistance does not substitute for a live demonstration or verification of external data.
+
+## Live data recovery (World Bank fallback)
+
+If REST Countries fails (including its redirect to `files-03.restcountries.com`), the app automatically loads World Bank country metadata, population (`SP.POP.TOTL`), and surface area (`AG.SRF.TOTL.K2`). The population request follows the supplied `/country/all/indicator/SP.POP.TOTL?format=json` endpoint, adding `mrnev=1` for the latest non-empty observation and explicit pagination. Every response page is read; regional/income aggregates are excluded to prevent double counting. A source notice is displayed in this mode. World Bank geographic groups are mapped to the explorer's continent categories.
+
+World Bank does not provide language, currency, or land-border metadata. Those fields remain unavailable in fallback mode; an empty borders list is not presented as proof of an island country. Population and surface-area reporting years are retained in the normalized country records. GDP and other development indicators continue to use live World Bank requests.
+
+Live service verification after adding the fallback returned **217 countries/economies**, Sri Lanka population **21,756,000 (2025)**, surface area **65,610 km² (2024)**, and all four development indicators. These values may change when the source updates. Earlier network-blocking notes describe the initial instance; the World Bank endpoint is now reachable from the execution machine.
+
+The additional [`live-country-worldbank.png`](docs/screenshots/live-country-worldbank.png) capture uses genuine live responses, relayed through the configured cloud HTTPS proxy with certificate verification intact. Dashboard and detail rendering succeeded with this relay; direct Chromium API connections timed out in the managed instance, so direct browser connectivity still depends on the client network. The REST Countries redirect host `files-03.restcountries.com` has also been added to the environment draft for review/save and publication.

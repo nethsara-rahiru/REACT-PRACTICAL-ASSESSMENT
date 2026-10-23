@@ -131,6 +131,8 @@ export async function mockAPIs(page, { missing = false, slow = false } = {}) {
   });
   await page.route("https://api.worldbank.org/**", async (route) => {
     const url = route.request().url();
+    if (url.includes("/country?"))
+      return route.fulfill({ status: 503, body: "World Bank unavailable" });
     if (slow && url.includes("/IND/"))
       await new Promise((resolve) => setTimeout(resolve, 500));
     const code = url.split("/country/")[1].split("/")[0];

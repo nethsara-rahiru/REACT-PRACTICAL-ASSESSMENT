@@ -134,7 +134,8 @@ export default function Dashboard() {
               ))}
             </div>
             <p className="panel-note">
-              Population estimates from REST Countries
+              Population estimates from{" "}
+              {countries[0]?.dataSource || "REST Countries"}
             </p>
             <Link to="/explore?sort=population" className="text-link">
               View all countries <ArrowRight size={15} />

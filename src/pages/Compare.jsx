@@ -204,7 +204,7 @@ export default function Compare() {
                       subtitle={
                         metric.indicator
                           ? "World Bank · latest available year"
-                          : "REST Countries · latest available estimates"
+                          : "Country source · latest available estimates"
                       }
                     />
                     <div

@@ -123,7 +123,11 @@ function Country({ country: c }) {
         <section className="panel">
           <PanelTitle
             title="Beyond the borders"
-            subtitle={`${borders.length} neighboring ${borders.length === 1 ? "country" : "countries"}`}
+            subtitle={
+              c.dataSource === "World Bank"
+                ? "Not provided by this data source"
+                : `${borders.length} neighboring ${borders.length === 1 ? "country" : "countries"}`
+            }
           />
           {borders.length ? (
             <div className="neighbors">
@@ -138,8 +142,16 @@ function Country({ country: c }) {
           ) : (
             <div className="island-note">
               <Globe2 size={30} />
-              <h3>No land borders</h3>
-              <p>This country has no listed land neighbors.</p>
+              <h3>
+                {c.dataSource === "World Bank"
+                  ? "Border information unavailable"
+                  : "No land borders"}
+              </h3>
+              <p>
+                {c.dataSource === "World Bank"
+                  ? "World Bank does not provide land-border metadata."
+                  : "This country has no listed land neighbors."}
+              </p>
             </div>
           )}
         </section>

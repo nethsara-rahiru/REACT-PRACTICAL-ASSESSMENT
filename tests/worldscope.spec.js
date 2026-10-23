@@ -240,3 +240,66 @@ test("all major views fit mobile and tablet without page overflow", async ({
     }
   }
 });
+
+test("World Bank fallback paginates, excludes aggregates and preserves missing metadata", async ({
+  page,
+}) => {
+  await page.route("https://restcountries.com/**", (route) =>
+    route.fulfill({ status: 503 }),
+  );
+  await page.route("https://api.worldbank.org/**", (route) => {
+    const url = new URL(route.request().url());
+    let rows;
+    let pages = 1;
+    if (url.pathname === "/v2/country") {
+      pages = 2;
+      rows =
+        url.searchParams.get("page") === "2"
+          ? [
+              {
+                id: "IND",
+                iso2Code: "IN",
+                name: "India",
+                capitalCity: "New Delhi",
+                region: { id: "SAS", value: "South Asia" },
+              },
+            ]
+          : [
+              {
+                id: "LKA",
+                iso2Code: "LK",
+                name: "Sri Lanka",
+                capitalCity: "Colombo",
+                region: { id: "SAS", value: "South Asia" },
+              },
+              {
+                id: "WLD",
+                name: "World",
+                region: { id: "NA", value: "Aggregates" },
+              },
+            ];
+    } else if (url.pathname.includes("SP.POP.TOTL"))
+      rows = [
+        { countryiso3code: "LKA", value: 21756000, date: "2025" },
+        { countryiso3code: "IND", value: 1460000000, date: "2025" },
+        { countryiso3code: "WLD", value: 8000000000, date: "2025" },
+      ];
+    else if (url.pathname.includes("AG.SRF.TOTL.K2"))
+      rows = [{ countryiso3code: "LKA", value: 65610, date: "2024" }];
+    else rows = [{ value: 77, date: "2024" }];
+    return route.fulfill({ json: [{ pages }, rows] });
+  });
+  await page.goto("/");
+  await expect(page.locator(".stat-value").first()).toHaveText("2");
+  await expect(page.getByRole("status")).toContainText("Using live World Bank");
+  await page.goto("/country/LKA");
+  await expect(
+    page.getByRole("heading", { name: "Sri Lanka", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Border information unavailable" }),
+  ).toBeVisible();
+  await expect(page.locator(".detail-stat-value").nth(1)).toHaveText(
+    "65,610 km²",
+  );
+});

@@ -23,7 +23,7 @@ export function PageHeading({ eyebrow, title, description, children }) {
   );
 }
 export function DataState({ children }) {
-  const { loading, error, retry } = useApp();
+  const { countries, loading, error, retry } = useApp();
   if (loading)
     return (
       <div className="state-box" role="status">
@@ -37,13 +37,28 @@ export function DataState({ children }) {
       <div className="state-box" role="alert">
         <AlertCircle size={28} />
         <h3>We couldn’t load country data</h3>
-        <p>{error} Check your connection and access to restcountries.com.</p>
+        <p>
+          {error} Check your connection and access to restcountries.com and
+          api.worldbank.org.
+        </p>
         <button className="button primary" onClick={retry}>
           <RefreshCw size={16} /> Try again
         </button>
       </div>
     );
-  return children;
+  return (
+    <>
+      {countries[0]?.dataSource === "World Bank" && (
+        <div className="inline-alert" role="status">
+          Using live World Bank country data because REST Countries is
+          unavailable. Languages, currencies, and land-border information are
+          unavailable in this mode. Population and area use the latest available
+          reporting year per country.
+        </div>
+      )}
+      {children}
+    </>
+  );
 }
 export function Empty({
   title = "No countries found",
