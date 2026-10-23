@@ -1,15 +1,149 @@
-import { NavLink, Link, Outlet, useLocation } from 'react-router-dom'
-import { Globe2, LayoutDashboard, Compass, ArrowLeftRight, Settings2, Moon, Sun, ChevronRight, Menu, X, ArrowUpRight } from 'lucide-react'
-import { useApp } from '../context/AppContext'
-import { useEffect, useState } from 'react'
-const links = [['/', 'Dashboard', LayoutDashboard], ['/explore', 'Explore countries', Compass], ['/compare', 'Compare countries', ArrowLeftRight], ['/settings', 'Settings', Settings2]]
+import { NavLink, Link, Outlet, useLocation } from "react-router-dom";
+import {
+  Globe2,
+  LayoutDashboard,
+  Compass,
+  ArrowLeftRight,
+  Settings2,
+  Moon,
+  Sun,
+  ChevronRight,
+  Menu,
+  X,
+  ArrowUpRight,
+} from "lucide-react";
+import { useApp } from "../context/appState";
+import { useEffect, useState } from "react";
+const links = [
+  ["/", "Dashboard", LayoutDashboard],
+  ["/explore", "Explore countries", Compass],
+  ["/compare", "Compare countries", ArrowLeftRight],
+  ["/settings", "Settings", Settings2],
+];
 export default function Layout() {
-  const { theme, setTheme, preferences, selected, notice } = useApp()
-  const [open, setOpen] = useState(false)
-  const location = useLocation()
-  useEffect(() => { setOpen(false); window.scrollTo(0, 0) }, [location.pathname])
-  const title = location.pathname.startsWith('/country/') ? 'Country details' : links.find(([url]) => url === location.pathname)?.[1] || 'Page not found'
-  return <div className="app-shell"><a href="#main" className="skip-link">Skip to content</a>{open && <button className="sidebar-backdrop" aria-label="Close navigation" onClick={() => setOpen(false)}/>}
-    <aside className={`sidebar ${open ? 'is-open' : ''}`}><Link to="/" className="brand"><span className="brand-symbol"><Globe2 size={25}/></span>WorldScope<span className="brand-dot">.</span></Link><div className="sidebar-label">YOUR WORLD, IN PERSPECTIVE</div><nav aria-label="Main navigation">{links.map(([url, label, Icon]) => <NavLink key={url} to={url} end={url === '/'} className={({ isActive }) => `nav-item ${isActive ? 'selected' : ''}`}><Icon size={19}/><span>{label}</span>{url === '/compare' && selected.length > 0 && <span className="nav-count">{selected.length}</span>}</NavLink>)}</nav><div className="sidebar-insight"><div className="mini-globe"><Globe2 size={35}/></div><h3>A world of possibilities.</h3><p>Discover the places, people, and numbers that shape our planet.</p><Link to="/explore">Start exploring <ArrowUpRight size={16}/></Link></div><div className="sidebar-bottom"><span className="status-dot"/> Powered by open data<span className="version">v1.0</span></div></aside>
-    <div className="main-shell"><header className="topbar"><div className="breadcrumb"><button className="icon-button mobile-menu" onClick={() => setOpen(!open)} aria-label="Toggle navigation">{open ? <X size={21}/> : <Menu size={21}/>}</button><Globe2 size={17}/><span>Workspace</span><ChevronRight size={14}/><strong>{title}</strong></div><div className="topbar-right"><span className="live-badge"><span className="status-dot"/> Live public data</span><button className="icon-button theme-toggle" onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')} aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}>{theme === 'light' ? <Moon size={18}/> : <Sun size={18}/>}</button><Link to="/settings" className="avatar" aria-label="Profile settings">{(preferences.name || 'Explorer').slice(0, 2).toUpperCase()}</Link></div></header><main id="main"><Outlet/></main><footer><span>WorldScope <span className="footer-dot">·</span> A little more connected.</span><span>Data: REST Countries & World Bank <span className="footer-dot">↗</span></span></footer></div>{notice && <div className="toast" role="status">{notice}</div>}{selected.length > 0 && location.pathname !== '/compare' && <Link className="compare-floating" to="/compare"><ArrowLeftRight size={17}/> Compare {selected.length} {selected.length === 1 ? 'country' : 'countries'} <ChevronRight size={16}/></Link>}</div>
+  const { theme, setTheme, preferences, selected, notice } = useApp();
+  const [open, setOpen] = useState(false);
+  const location = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+  const title = location.pathname.startsWith("/country/")
+    ? "Country details"
+    : links.find(([url]) => url === location.pathname)?.[1] || "Page not found";
+  return (
+    <div className="app-shell">
+      <a href="#main" className="skip-link">
+        Skip to content
+      </a>
+      {open && (
+        <button
+          className="sidebar-backdrop"
+          aria-label="Close navigation"
+          onClick={() => setOpen(false)}
+        />
+      )}
+      <aside className={`sidebar ${open ? "is-open" : ""}`}>
+        <Link to="/" className="brand">
+          <span className="brand-symbol">
+            <Globe2 size={25} />
+          </span>
+          WorldScope<span className="brand-dot">.</span>
+        </Link>
+        <div className="sidebar-label">YOUR WORLD, IN PERSPECTIVE</div>
+        <nav aria-label="Main navigation" onClick={() => setOpen(false)}>
+          {links.map(([url, label, Icon]) => (
+            <NavLink
+              key={url}
+              to={url}
+              end={url === "/"}
+              className={({ isActive }) =>
+                `nav-item ${isActive ? "selected" : ""}`
+              }
+            >
+              <Icon size={19} />
+              <span>{label}</span>
+              {url === "/compare" && selected.length > 0 && (
+                <span className="nav-count">{selected.length}</span>
+              )}
+            </NavLink>
+          ))}
+        </nav>
+        <div className="sidebar-insight">
+          <div className="mini-globe">
+            <Globe2 size={35} />
+          </div>
+          <h3>A world of possibilities.</h3>
+          <p>Discover the places, people, and numbers that shape our planet.</p>
+          <Link to="/explore">
+            Start exploring <ArrowUpRight size={16} />
+          </Link>
+        </div>
+        <div className="sidebar-bottom">
+          <span className="status-dot" /> Powered by open data
+          <span className="version">v1.0</span>
+        </div>
+      </aside>
+      <div className="main-shell">
+        <header className="topbar">
+          <div className="breadcrumb">
+            <button
+              className="icon-button mobile-menu"
+              onClick={() => setOpen(!open)}
+              aria-label="Toggle navigation"
+            >
+              {open ? <X size={21} /> : <Menu size={21} />}
+            </button>
+            <Globe2 size={17} />
+            <span>Workspace</span>
+            <ChevronRight size={14} />
+            <strong>{title}</strong>
+          </div>
+          <div className="topbar-right">
+            <span className="live-badge">
+              <span className="status-dot" /> Live public data
+            </span>
+            <button
+              className="icon-button theme-toggle"
+              onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} theme`}
+            >
+              {theme === "light" ? <Moon size={18} /> : <Sun size={18} />}
+            </button>
+            <Link
+              to="/settings"
+              className="avatar"
+              aria-label="Profile settings"
+            >
+              {(preferences.name || "Explorer").slice(0, 2).toUpperCase()}
+            </Link>
+          </div>
+        </header>
+        <main id="main">
+          <Outlet />
+        </main>
+        <footer>
+          <span>
+            WorldScope <span className="footer-dot">·</span> A little more
+            connected.
+          </span>
+          <span>
+            Data: REST Countries & World Bank{" "}
+            <span className="footer-dot">↗</span>
+          </span>
+        </footer>
+      </div>
+      {notice && (
+        <div className="toast" role="status">
+          {notice}
+        </div>
+      )}
+      {selected.length > 0 && location.pathname !== "/compare" && (
+        <Link className="compare-floating" to="/compare">
+          <ArrowLeftRight size={17} /> Compare {selected.length}{" "}
+          {selected.length === 1 ? "country" : "countries"}{" "}
+          <ChevronRight size={16} />
+        </Link>
+      )}
+    </div>
+  );
 }
